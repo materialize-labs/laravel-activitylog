@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Activitylog\Contracts\Activity as ActivityContract;
 
 class Activity extends Model implements ActivityContract
@@ -38,6 +39,11 @@ class Activity extends Model implements ActivityContract
     public function causer(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function organization() : BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Organization::class);
     }
 
     public function getExtraProperty(string $propertyName)

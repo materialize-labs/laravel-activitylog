@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 interface Activity
 {
@@ -22,4 +23,6 @@ interface Activity
     public function scopeCausedBy(Builder $query, Model $causer): Builder;
 
     public function scopeForSubject(Builder $query, Model $subject): Builder;
+
+    public function organization(): BelongsTo;
 }

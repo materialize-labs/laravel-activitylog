@@ -84,6 +84,13 @@ class ActivityLogger
         return $this;
     }
 
+    public function withOrganization($model)
+    {
+        $this->getActivity()->organization()->associate($model->organization);
+
+        return $this;
+    }
+
     public function withProperty(string $key, $value)
     {
         $this->getActivity()->properties = $this->getActivity()->properties->put($key, $value);

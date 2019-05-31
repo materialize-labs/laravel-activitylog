@@ -13,6 +13,7 @@ class CreateActivityLogTable extends Migration
     {
         Schema::create(config('activitylog.table_name'), function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->integer('organization_id')->unsigned()->index('activity_log_organization_id');
             $table->string('log_name')->nullable();
             $table->text('description');
             $table->unsignedBigInteger('subject_id')->nullable();
@@ -23,6 +24,8 @@ class CreateActivityLogTable extends Migration
             $table->timestamps();
 
             $table->index('log_name');
+
+            $table->foreign('organization_id', 'activity_log_ibfk_1')->references('id')->on('organizations');
         });
     }
 
@@ -31,6 +34,7 @@ class CreateActivityLogTable extends Migration
      */
     public function down()
     {
+        $table->dropForeign('activity_log_ibfk_1');
         Schema::dropIfExists(config('activitylog.table_name'));
     }
 }

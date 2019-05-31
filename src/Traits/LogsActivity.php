@@ -42,6 +42,7 @@ trait LogsActivity
                     ->useLog($logName)
                     ->performedOn($model)
                     ->withProperties($attrs);
+                    ->withOrganization($model);
 
                 if (method_exists($model, 'tapActivity')) {
                     $logger->tap([$model, 'tapActivity'], $eventName);
