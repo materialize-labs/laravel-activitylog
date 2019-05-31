@@ -41,7 +41,7 @@ trait LogsActivity
                 $logger = app(ActivityLogger::class)
                     ->useLog($logName)
                     ->performedOn($model)
-                    ->withProperties($attrs);
+                    ->withProperties($attrs)
                     ->withOrganization($model);
 
                 if (method_exists($model, 'tapActivity')) {
