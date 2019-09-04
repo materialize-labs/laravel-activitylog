@@ -2,6 +2,32 @@
 
 All notable changes to `spatie/laravel-activitylog` will be documented in this file
 
+## 3.8.0 - 2019-09-04
+
+- add support for Laravel 6
+- change fields with value `null` to be strictly compared when logging dirty fields (#453)
+- add composite indexes for subject and causer to migration
+
+## 3.7.2 - 2019-08-28
+
+- do not export docs folder
+
+## 3.7.1 - 2019-07-24
+
+- fix default database connection env var
+
+## 3.7.0 - 2019-07-23
+
+- add database connection to configuration `activitylog.database_connection` and `ACTIVITY_LOGGER_DB_CONNECTION` env var [#568](https://github.com/spatie/laravel-activitylog/pull/568)
+
+## 3.6.3 - 2019-07-23
+
+- fix deprecated `array_` helper [#569](https://github.com/spatie/laravel-activitylog/pull/569)
+
+## 3.6.2 - 2019-07-16
+
+- fix existing description [#563](https://github.com/spatie/laravel-activitylog/pull/563)
+
 ## 3.6.1 - 2019-05-29
 
 - fix nullable date attributes [#546](https://github.com/spatie/laravel-activitylog/pull/546)

@@ -3,6 +3,7 @@
 namespace Spatie\Activitylog\Test;
 
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Test\Models\User;
 use Spatie\Activitylog\Test\Models\Article;
@@ -499,6 +500,7 @@ class DetectsChangesTest extends TestCase
                 'id' => $article->id,
                 'user_id' => null,
                 'json' => null,
+                'price' => null,
                 'created_at' => '2017-01-01 12:00:00',
                 'updated_at' => '2017-01-01 12:00:00',
             ],
@@ -536,6 +538,7 @@ class DetectsChangesTest extends TestCase
                 'deleted_at' => null,
                 'user_id' => $user->id,
                 'json' => null,
+                'price' => null,
                 'created_at' => '2017-01-01 12:00:00',
                 'updated_at' => '2017-01-01 12:00:00',
                 'user.name' => 'user name',
@@ -585,6 +588,92 @@ class DetectsChangesTest extends TestCase
     }
 
     /** @test */
+    public function it_can_store_the_changes_when_a_boolean_field_is_changed_from_null_to_false()
+    {
+        $articleClass = new class() extends Article {
+            public static $logAttributes = ['*'];
+            public static $logOnlyDirty = true;
+
+            protected $casts = [
+                'text' => 'boolean',
+            ];
+
+            use LogsActivity;
+        };
+
+        $user = User::create([
+            'name' => 'user name',
+        ]);
+
+        Carbon::setTestNow(Carbon::create(2017, 1, 1, 12, 0, 0));
+        $article = $articleClass::create([
+            'name' => 'article name',
+            'text' => null,
+            'user_id' => $user->id,
+        ]);
+
+        $article->text = false;
+        Carbon::setTestNow(Carbon::create(2018, 1, 1, 12, 0, 0));
+        $article->save();
+
+        $expectedChanges = [
+            'attributes' => [
+                'text' => false,
+                'updated_at' => '2018-01-01 12:00:00',
+            ],
+            'old' => [
+                'text' => null,
+                'updated_at' => '2017-01-01 12:00:00',
+            ],
+        ];
+
+        $this->assertSame($expectedChanges, $this->getLastActivity()->changes()->toArray());
+    }
+
+    /** @test */
+    public function it_can_store_the_changes_when_a_boolean_field_is_changed_from_false_to_null()
+    {
+        $articleClass = new class() extends Article {
+            public static $logAttributes = ['*'];
+            public static $logOnlyDirty = true;
+
+            protected $casts = [
+                'text' => 'boolean',
+            ];
+
+            use LogsActivity;
+        };
+
+        $user = User::create([
+            'name' => 'user name',
+        ]);
+
+        Carbon::setTestNow(Carbon::create(2017, 1, 1, 12, 0, 0));
+        $article = $articleClass::create([
+            'name' => 'article name',
+            'text' => false,
+            'user_id' => $user->id,
+        ]);
+
+        $article->text = null;
+        Carbon::setTestNow(Carbon::create(2018, 1, 1, 12, 0, 0));
+        $article->save();
+
+        $expectedChanges = [
+            'attributes' => [
+                'text' => null,
+                'updated_at' => '2018-01-01 12:00:00',
+            ],
+            'old' => [
+                'text' => false,
+                'updated_at' => '2017-01-01 12:00:00',
+            ],
+        ];
+
+        $this->assertSame($expectedChanges, $this->getLastActivity()->changes()->toArray());
+    }
+
+    /** @test */
     public function it_can_use_ignored_attributes_while_updating()
     {
         $articleClass = new class() extends Article {
@@ -607,6 +696,7 @@ class DetectsChangesTest extends TestCase
                 'id' => $article->id,
                 'user_id' => null,
                 'json' => null,
+                'price' => null,
                 'created_at' => '2017-01-01 12:00:00',
             ],
         ];
@@ -634,6 +724,7 @@ class DetectsChangesTest extends TestCase
             'attributes' => [
                 'name' => 'my name',
                 'user_id' => null,
+                'price' => null,
             ],
         ];
 
@@ -700,7 +791,7 @@ class DetectsChangesTest extends TestCase
 
             public function getDescriptionAttribute()
             {
-                return array_get(json_decode($this->attributes['json'], true), 'description');
+                return Arr::get(json_decode($this->attributes['json'], true), 'description');
             }
         };
 
@@ -903,6 +994,53 @@ class DetectsChangesTest extends TestCase
     }
 
     /** @test */
+    public function it_can_use_casted_as_loggable_attribute()
+    {
+        $articleClass = new class() extends Article {
+            protected static $logAttributes = ['name', 'text', 'price'];
+            public static $logOnlyDirty = true;
+            protected $casts = [
+                'price' => 'float',
+            ];
+
+            use LogsActivity;
+        };
+
+        $article = new $articleClass();
+        $article->name = 'my name';
+        $article->text = 'my text';
+        $article->price = '9.99';
+        $article->save();
+
+        $expectedChanges = [
+            'attributes' => [
+                'name' => 'my name',
+                'text' => 'my text',
+                'price' => 9.99,
+            ],
+        ];
+
+        $changes = $this->getLastActivity()->changes()->toArray();
+        $this->assertSame($expectedChanges, $changes);
+        $this->assertIsFloat($changes['attributes']['price']);
+
+        $article->price = 19.99;
+        $article->save();
+
+        $expectedChanges = [
+            'attributes' => [
+                'price' => 19.99,
+            ],
+            'old' => [
+                'price' => 9.99,
+            ],
+        ];
+
+        $changes = $this->getLastActivity()->changes()->toArray();
+        $this->assertSame($expectedChanges, $changes);
+        $this->assertIsFloat($changes['attributes']['price']);
+    }
+
     public function it_can_use_nullable_date_as_loggable_attributes()
     {
         $userClass = new class() extends User {

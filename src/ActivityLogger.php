@@ -139,7 +139,10 @@ class ActivityLogger
 
         $activity = $this->activity;
 
-        $activity->description = $this->replacePlaceholders($description, $activity);
+        $activity->description = $this->replacePlaceholders(
+            $activity->description ?? $description,
+            $activity
+        );
 
         $activity->save();
 

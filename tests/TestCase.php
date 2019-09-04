@@ -42,6 +42,13 @@ abstract class TestCase extends OrchestraTestCase
 
     public function getEnvironmentSetUp($app)
     {
+        $app['config']->set('activitylog.database_connection', 'sqlite');
+        $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('database.connections.sqlite', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ]);
+
         $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('app.key', 'base64:'.base64_encode(
             Encrypter::generateKey($app['config']['app.cipher'])
@@ -77,6 +84,7 @@ abstract class TestCase extends OrchestraTestCase
                     $table->integer('user_id')->unsigned()->nullable();
                     $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
                     $table->text('json')->nullable();
+                    $table->decimal('price')->nullable();
                 }
             });
         });
